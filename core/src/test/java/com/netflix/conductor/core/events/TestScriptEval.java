@@ -34,7 +34,7 @@ public class TestScriptEval {
         payload.put("author", "Netflix");
         payload.put("oss", true);
 
-        String script1 = "$.app.name == 'conductor'"; // true
+        String script1 = "$.app.name == 'conductorxxx'"; // true
         String script2 = "$.version > 3"; // false
         String script3 = "$.oss"; // true
         String script4 = "$.author == 'me'"; // false
