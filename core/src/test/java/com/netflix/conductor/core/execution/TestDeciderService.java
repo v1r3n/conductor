@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.core.execution.tasks.Join;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -82,6 +83,11 @@ public class TestDeciderService {
         @Bean(TASK_TYPE_SUB_WORKFLOW)
         public SubWorkflow subWorkflow(ObjectMapper objectMapper) {
             return new SubWorkflow(objectMapper);
+        }
+
+        @Bean(TASK_TYPE_JOIN)
+        public Join join() {
+            return new Join();
         }
 
         @Bean("asyncCompleteSystemTask")
@@ -458,6 +464,19 @@ public class TestDeciderService {
         assertEquals(2, scheduledTasks.size());
         assertEquals(TaskModel.Status.IN_PROGRESS, scheduledTasks.get(0).getStatus());
         assertEquals(TaskModel.Status.SCHEDULED, scheduledTasks.get(1).getStatus());
+    }
+
+    @Test
+    public void testDynamicForkReExecution() throws IOException {
+        WorkflowModel model = objectMapper.readValue(
+                TestDeciderService.class.getResource("/load_test_exec.json"), WorkflowModel.class);
+
+        assertNotNull(model);
+
+        DeciderOutcome outcome = deciderService.decide(model);
+        assertNotNull(outcome);
+        assertEquals(1, outcome.tasksToBeScheduled.size());        //Join task
+        assertEquals(JOIN.name(), outcome.tasksToBeScheduled.get(0).getTaskType());
     }
 
     @Test

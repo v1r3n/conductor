@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -146,65 +141,69 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
 
         mappedTasks.add(forkDynamicTask);
 
+        Optional<TaskModel> exists = workflowModel.getTasks().stream().filter(task -> task.getReferenceTaskName().equals(taskMapperContext.getWorkflowTask().getTaskReferenceName())).findAny();
         List<String> joinOnTaskRefs = new LinkedList<>();
-        // Add each dynamic task to the mapped tasks and also get the last dynamic task in the list,
-        // which indicates that the following task after that needs to be a join task
-        for (WorkflowTask dynForkTask :
-                dynForkTasks) { // TODO this is a cyclic dependency, break it out using function
-            // composition
-            List<TaskModel> forkedTasks =
-                    taskMapperContext
-                            .getDeciderService()
-                            .getTasksToBeScheduled(workflowModel, dynForkTask, retryCount);
 
-            // It's an error state if no forkedTasks can be decided upon. In the cases where we've
-            // seen
-            // this happen is when a dynamic task is attempting to be created here, but a task with
-            // the
-            // same reference name has already been created in the Workflow.
-            if (forkedTasks == null || forkedTasks.isEmpty()) {
-                Optional<String> existingTaskRefName =
-                        workflowModel.getTasks().stream()
-                                .filter(
-                                        runningTask ->
-                                                runningTask
-                                                                .getStatus()
-                                                                .equals(
-                                                                        TaskModel.Status
-                                                                                .IN_PROGRESS)
-                                                        || runningTask.getStatus().isTerminal())
-                                .map(TaskModel::getReferenceTaskName)
-                                .filter(
-                                        refTaskName ->
-                                                refTaskName.equals(
-                                                        dynForkTask.getTaskReferenceName()))
-                                .findAny();
+        if(!exists.isPresent()) {
+            // Add each dynamic task to the mapped tasks and also get the last dynamic task in the list,
+            // which indicates that the following task after that needs to be a join task
+            for (WorkflowTask dynForkTask : dynForkTasks) { // TODO this is a cyclic dependency, break it out using function
+                // composition
+                List<TaskModel> forkedTasks =
+                        taskMapperContext
+                                .getDeciderService()
+                                .getTasksToBeScheduled(workflowModel, dynForkTask, retryCount);
 
-                // Construct an informative error message
-                String terminateMessage =
-                        "No dynamic tasks could be created for the Workflow: "
-                                + workflowModel.toShortString()
-                                + ", Dynamic Fork Task: "
-                                + dynForkTask;
-                if (existingTaskRefName.isPresent()) {
-                    terminateMessage +=
-                            "Attempted to create a duplicate task reference name: "
-                                    + existingTaskRefName.get();
+                // It's an error state if no forkedTasks can be decided upon. In the cases where we've
+                // seen
+                // this happen is when a dynamic task is attempting to be created here, but a task with
+                // the
+                // same reference name has already been created in the Workflow.
+                if (forkedTasks == null || forkedTasks.isEmpty()) {
+                    Optional<String> existingTaskRefName =
+                            workflowModel.getTasks().stream()
+                                    .filter(
+                                            runningTask ->
+                                                    runningTask
+                                                            .getStatus()
+                                                            .equals(
+                                                                    TaskModel.Status
+                                                                            .IN_PROGRESS)
+                                                            || runningTask.getStatus().isTerminal())
+                                    .map(TaskModel::getReferenceTaskName)
+                                    .filter(
+                                            refTaskName ->
+                                                    refTaskName.equals(
+                                                            dynForkTask.getTaskReferenceName()))
+                                    .findAny();
+
+                    // Construct an informative error message
+                    String terminateMessage =
+                            "No dynamic tasks could be created for the Workflow: "
+                                    + workflowModel.toShortString()
+                                    + ", Dynamic Fork Task: "
+                                    + dynForkTask;
+                    if (existingTaskRefName.isPresent()) {
+                        terminateMessage +=
+                                "Attempted to create a duplicate task reference name: "
+                                        + existingTaskRefName.get();
+                    }
+                    throw new TerminateWorkflowException(terminateMessage);
                 }
-                throw new TerminateWorkflowException(terminateMessage);
-            }
 
-            for (TaskModel forkedTask : forkedTasks) {
-                Map<String, Object> forkedTaskInput =
-                        tasksInput.get(forkedTask.getReferenceTaskName());
-                forkedTask.getInputData().putAll(forkedTaskInput);
+                for (TaskModel forkedTask : forkedTasks) {
+                    Map<String, Object> forkedTaskInput =
+                            tasksInput.get(forkedTask.getReferenceTaskName());
+                    forkedTask.getInputData().putAll(forkedTaskInput);
+                }
+                mappedTasks.addAll(forkedTasks);
+                // Get the last of the dynamic tasks so that the join can be performed once this task is
+                // done
+                TaskModel last = forkedTasks.get(forkedTasks.size() - 1);
+                joinOnTaskRefs.add(last.getReferenceTaskName());
             }
-            mappedTasks.addAll(forkedTasks);
-            // Get the last of the dynamic tasks so that the join can be performed once this task is
-            // done
-            TaskModel last = forkedTasks.get(forkedTasks.size() - 1);
-            joinOnTaskRefs.add(last.getReferenceTaskName());
         }
+
 
         // From the workflow definition get the next task and make sure that it is a JOIN task.
         // The dynamic fork tasks need to be followed by a join task

@@ -1272,7 +1272,7 @@ public class WorkflowExecutor {
 
             WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
             if(workflow == null) {
-                //This can hapen if the workflowId is incorrect
+                //This can happen if the workflowId is incorrect
                 return null;
             }
             // FIXME Backwards compatibility for legacy workflows already running.

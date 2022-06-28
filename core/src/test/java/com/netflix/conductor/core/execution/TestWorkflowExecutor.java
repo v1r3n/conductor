@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -102,6 +103,11 @@ public class TestWorkflowExecutor {
         @Bean(TASK_TYPE_WAIT)
         public Wait waitBean() {
             return new Wait();
+        }
+
+        @Bean(TASK_TYPE_JOIN)
+        public Join join() {
+            return new Join();
         }
 
         @Bean("HTTP")
@@ -329,6 +335,45 @@ public class TestWorkflowExecutor {
 
         when(executionDAOFacade.createTasks(tasks)).thenThrow(new RuntimeException());
         workflowExecutor.scheduleTask(workflow, tasks);
+    }
+
+    @Test
+    public void testDynamicForkReExecution() throws IOException {
+
+        WorkflowModel model = objectMapper.readValue(
+                TestDeciderService.class.getResource("/load_test_exec.json"), WorkflowModel.class);
+
+        assertNotNull(model);
+
+        WorkflowModel executedModel = workflowExecutor.decide(model);
+        assertNotNull(executedModel);
+        assertNotNull(executedModel);
+        assertEquals(TaskModel.Status.COMPLETED, executedModel.getTaskByRefName("dynamic_fork_join").getStatus());
+        assertEquals(13, executedModel.getTasks().size());
+        assertEquals(TaskModel.Status.IN_PROGRESS, executedModel.getTaskByRefName("fork_join").getStatus());
+        assertEquals(TaskModel.Status.SCHEDULED, executedModel.getTaskByRefName("simple_task_3").getStatus());
+        assertEquals(TaskModel.Status.SCHEDULED, executedModel.getTaskByRefName("simple_task_1").getStatus());
+    }
+
+    @Test
+    public void testSubWorkflowExecution() throws IOException {
+
+        WorkflowModel model = objectMapper.readValue(
+                TestDeciderService.class.getResource("/sub_workflow_exec.json"), WorkflowModel.class);
+        WorkflowModel subWorkflow = new WorkflowModel();
+        subWorkflow.setStatus(WorkflowModel.Status.COMPLETED);
+        subWorkflow.setOutput(new HashMap<>());
+        when(workflowExecutor.getWorkflow("21805f9d-f64a-11ec-9006-4ec47103bb9a", false)).thenReturn(subWorkflow);
+        assertNotNull(model);
+
+        WorkflowModel executedModel = workflowExecutor.decide(model);
+        assertNotNull(executedModel);
+        assertNotNull(executedModel);
+        assertEquals(TaskModel.Status.COMPLETED, executedModel.getTaskByRefName("dynamic_fork_join").getStatus());
+        assertEquals(13, executedModel.getTasks().size());
+        assertEquals(TaskModel.Status.IN_PROGRESS, executedModel.getTaskByRefName("fork_join").getStatus());
+        assertEquals(TaskModel.Status.SCHEDULED, executedModel.getTaskByRefName("simple_task_3").getStatus());
+        assertEquals(TaskModel.Status.SCHEDULED, executedModel.getTaskByRefName("simple_task_1").getStatus());
     }
 
     /** Simulate Queue push failures and assert that scheduleTask doesn't throw an exception. */
