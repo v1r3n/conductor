@@ -14,7 +14,7 @@ package com.netflix.conductor.sdk.example.shipment;
 
 import java.math.BigDecimal;
 
-public class Order {
+public class Order2 {
 
     public enum ShippingMethod {
         GROUND,
@@ -23,7 +23,6 @@ public class Order {
     }
 
     private String orderNumber;
-
 
     private String sku;
 
@@ -37,16 +36,14 @@ public class Order {
 
     private ShippingMethod shippingMethod;
 
-    private int userId;
-
-    public Order(String orderNumber, String sku, int quantity, BigDecimal unitPrice) {
+    public Order2(String orderNumber, String sku, int quantity, BigDecimal unitPrice) {
         this.orderNumber = orderNumber;
         this.sku = sku;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
 
-    public Order() {}
+    public Order2() {}
 
     public String getOrderNumber() {
         return orderNumber;
@@ -102,13 +99,5 @@ public class Order {
 
     public void setShippingMethod(ShippingMethod shippingMethod) {
         this.shippingMethod = shippingMethod;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
     }
 }

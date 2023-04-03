@@ -14,6 +14,7 @@ package com.netflix.conductor.sdk.workflow.executor.task;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,6 +149,16 @@ public class AnnotatedWorkerExecutor {
         }
     }
 
+    public <T,R> void addFunction(String name, Function<T, R> function) {
+        workerToThreadCount.put(name, 1);
+        workerToPollingInterval.put(name, 10);
+        workerClassObjs.put(name, this);
+        workerExecutors.put(name, Arrays.stream(AnnotatedWorkerExecutor.class.getDeclaredMethods()).filter(m -> m.getName().equals("executeFunction")).findFirst().get());
+    }
+
+    public <T,R> void executeFunction(Function<T, R> function, Object... args) {
+        function.apply((T) args[0]);
+    }
     private void addMethod(WorkerTask annotation, Method method, Object bean) {
         String name = annotation.value();
 

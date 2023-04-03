@@ -24,7 +24,7 @@ import com.netflix.conductor.sdk.workflow.task.WorkerTask;
 
 public class ShipmentWorkers {
 
-    @WorkerTask(value = "generateDynamicFork", threadCount = 3)
+    //@WorkerTask(value = "generateDynamicFork", threadCount = 3)
     public DynamicForkInput generateDynamicFork(
             @InputParam("orderDetails") List<Order> orderDetails,
             @InputParam("userDetails") User userDetails) {
@@ -46,7 +46,7 @@ public class ShipmentWorkers {
         return input;
     }
 
-    @WorkerTask(value = "get_order_details", threadCount = 5)
+    //@WorkerTask(value = "get_order_details", threadCount = 5)
     public List<Order> getOrderDetails(@InputParam("orderNo") String orderNo) {
         int lineItemCount = new Random().nextInt(10);
         List<Order> orderDetails = new ArrayList<>();
@@ -69,7 +69,7 @@ public class ShipmentWorkers {
         return orderDetails;
     }
 
-    @WorkerTask("get_user_details")
+    //@WorkerTask("get_user_details")
     public User getUserDetails(@InputParam("userId") String userId) {
         User user =
                 new User(
@@ -85,7 +85,7 @@ public class ShipmentWorkers {
         return user;
     }
 
-    @WorkerTask("calculate_tax_and_total")
+    //@WorkerTask("calculate_tax_and_total")
     public @OutputParam("total_amount") BigDecimal calculateTax(
             @InputParam("orderDetail") Order orderDetails) {
         BigDecimal preTaxAmount =
@@ -97,7 +97,7 @@ public class ShipmentWorkers {
         return preTaxAmount.add(tax);
     }
 
-    @WorkerTask("ground_shipping_label")
+    //@WorkerTask("ground_shipping_label")
     public @OutputParam("reference_number") String prepareGroundShipping(
             @InputParam("name") String name,
             @InputParam("address") String address,
@@ -106,7 +106,7 @@ public class ShipmentWorkers {
         return "Ground_" + orderNo;
     }
 
-    @WorkerTask("air_shipping_label")
+    //@WorkerTask("air_shipping_label")
     public @OutputParam("reference_number") String prepareAirShipping(
             @InputParam("name") String name,
             @InputParam("address") String address,
@@ -115,7 +115,7 @@ public class ShipmentWorkers {
         return "Air_" + orderNo;
     }
 
-    @WorkerTask("same_day_shipping_label")
+    //@WorkerTask("same_day_shipping_label")
     public @OutputParam("reference_number") String prepareSameDayShipping(
             @InputParam("name") String name,
             @InputParam("address") String address,
@@ -124,7 +124,7 @@ public class ShipmentWorkers {
         return "SameDay_" + orderNo;
     }
 
-    @WorkerTask("charge_payment")
+    //@WorkerTask("charge_payment")
     public @OutputParam("reference") String chargePayment(
             @InputParam("amount") BigDecimal amount,
             @InputParam("billingId") String billingId,
@@ -133,7 +133,7 @@ public class ShipmentWorkers {
         return UUID.randomUUID().toString();
     }
 
-    @WorkerTask("send_email")
+    //@WorkerTask("send_email")
     public void sendEmail(
             @InputParam("name") String name,
             @InputParam("email") String email,

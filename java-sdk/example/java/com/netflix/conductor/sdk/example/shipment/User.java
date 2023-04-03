@@ -30,6 +30,10 @@ public class User {
 
     private String billingId;
 
+    private Address address;
+
+    private int id;
+
     public User(
             String name,
             String email,
@@ -52,6 +56,7 @@ public class User {
     public User() {}
 
     public String getName() {
+        System.out.println("Getting the name");
         return name;
     }
 
@@ -113,5 +118,21 @@ public class User {
 
     public void setBillingId(String billingId) {
         this.billingId = billingId;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 }

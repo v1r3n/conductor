@@ -12,8 +12,13 @@
  */
 package com.netflix.conductor.sdk.workflow.def;
 
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import com.netflix.conductor.client.exception.ConductorClientException;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -21,19 +26,37 @@ import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.sdk.example.shipment.User;
+import com.netflix.conductor.sdk.workflow.WorkflowMethod;
+import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
+import com.netflix.conductor.sdk.workflow.def.tasks.Switch;
 import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.def.tasks.TaskRegistry;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
+import com.netflix.conductor.sdk.workflow.task.InputParam;
+import com.netflix.conductor.sdk.workflow.task.WorkerTask;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+
+import static com.netflix.conductor.sdk.workflow.utils.Utils.toInputMap;
 
 /**
  * @param <T> Type of the workflow input
  */
 public class ConductorWorkflow<T> {
+
+    private static InheritableThreadLocal<ConductorWorkflow> ctx = new InheritableThreadLocal<>();
+
+    private static InheritableThreadLocal<Stack<Task>> callStack = new InheritableThreadLocal<>();
+
+    private static Map<String, AtomicInteger> referenceNameCounter = new HashMap<>();
+
+    private static Map<Object, String> proxyMap = new HashMap<>();
 
     public static final InputOutputGetter input =
             new InputOutputGetter("workflow", InputOutputGetter.Field.input);
@@ -73,6 +96,25 @@ public class ConductorWorkflow<T> {
         this.workflowOutput = new HashMap<>();
         this.workflowExecutor = workflowExecutor;
         this.restartable = true;
+    }
+
+    public ConductorWorkflow() {
+        this.workflowOutput = new HashMap<>();
+        this.restartable = true;
+        this.workflowExecutor = new WorkflowExecutor("http://localhost:8080/api/");
+    }
+
+    public static ConductorWorkflow current() {
+        ConductorWorkflow workflow = ctx.get();
+        if(workflow == null) {
+            workflow = new ConductorWorkflow();
+            ctx.set(workflow);
+        }
+        return workflow;
+    }
+
+    public void startWorkers(String packageToScan) {
+        this.workflowExecutor.initWorkers(packageToScan);
     }
 
     public void setName(String name) {
@@ -351,5 +393,164 @@ public class ConductorWorkflow<T> {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T> T newInstance(Class<T> clazz) {
+
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(clazz);
+
+        enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> {
+            WorkflowMethod workflowMethodAnn = method.getAnnotation(WorkflowMethod.class);
+            if (workflowMethodAnn != null) {
+                ConductorWorkflow workflow = new ConductorWorkflow();
+                ctx.set(workflow);
+                callStack.set(new Stack<>());
+
+                proxy.invokeSuper(obj, args);
+                callStack.get().forEach(t -> workflow.add(t));
+                workflow.setName(workflowMethodAnn.name());
+                workflow.setVersion(workflowMethodAnn.version());
+                workflow.setTimeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF);
+                workflow.setDescription(workflowMethodAnn.name());
+                return workflow;
+
+            } else if (method.getAnnotation(WorkerTask.class) != null) {
+                var ann = method.getAnnotation(WorkerTask.class);
+                Class<?> returns = method.getReturnType();
+                AtomicInteger refCount = referenceNameCounter.getOrDefault(ann.value(), new AtomicInteger(0));
+                referenceNameCounter.put(ann.value(), refCount);
+                String referenceName = ann.value() + "_" + refCount.incrementAndGet();
+                Object returnObj = proxy(referenceName, returns);
+
+                WorkerTask annotation = method.getAnnotation(WorkerTask.class);
+                SimpleTask task = new SimpleTask(annotation.value(), referenceName);
+                task.description(annotation.value());
+
+                for (int i = 0; i < method.getParameters().length; i++) {
+                    Parameter param = method.getParameters()[i];
+                    InputParam inputParamAnn = param.getAnnotation(InputParam.class);
+                    Object value = args[i];
+                    String key = param.getName();
+                    if (inputParamAnn != null) {
+                        key = inputParamAnn.value();
+                    }
+                    boolean isProxied = false;
+                    try {
+                        var cglibField = value.getClass().getDeclaredField("CGLIB$BOUND");
+                        isProxied = cglibField != null;
+                    } catch (NoSuchFieldException noSuchFieldException) {
+                    }
+
+                    if (isProxied) {
+                        String prefix = proxyMap.get(value);
+                        task.getInput().put(param.getName(), toInputMap(prefix, value.getClass().getSuperclass()));
+                    } else {
+                        task.getInput().put(key, value);
+                    }
+
+                }
+                callStack.get().push(task);
+                if (returnObj != null) {
+                    return returnObj;
+                }
+                return proxy.invokeSuper(obj, args);
+            }
+            return proxy.invokeSuper(obj, args);
+        });
+        return (T) enhancer.create();
+    }
+
+    public IfThenElse iff(String condition, Map<String, Object> inputs, Object...args) {
+        AtomicInteger refCount = referenceNameCounter.getOrDefault("switch", new AtomicInteger(0));
+        referenceNameCounter.put("switch", refCount);
+        String referenceName = "switch_" + refCount.incrementAndGet();
+
+        Switch decide = new Switch(referenceName, condition, true);
+        decide.description("switch task");
+
+        for (Map.Entry<String, Object> keyValue : inputs.entrySet()) {
+            String key = keyValue.getKey();
+            Object value = keyValue.getValue();
+            String valueRef = proxyMap.get(value);
+            decide.input(key, toInputMap(valueRef, value.getClass().getSuperclass()));
+
+        }
+
+        Task[] cases = new Task[args.length];
+        for (int i = 0; i < args.length; i++) {
+            if(callStack.get() != null && !callStack.get().isEmpty()) {
+                cases[i] = callStack.get().pop();
+            } else {
+                cases[i] = null;
+            }
+
+        }
+        decide.switchCase("true", cases);
+        if(callStack.get() != null) {
+            callStack.get().push(decide);
+        }
+        return new IfThenElse(decide);
+    }
+
+    public <T, R>R transform(Function<T, R> function, T arg) {
+        //return function.apply(arg);
+        AtomicInteger refCount = referenceNameCounter.getOrDefault("transform", new AtomicInteger(0));
+        referenceNameCounter.put("transform", refCount);
+        String referenceName = "transform_" + refCount.incrementAndGet();
+        Task simple = new SimpleTask(referenceName, referenceName);
+        String prefix = proxyMap.get(arg);
+        if(prefix == null) {
+            simple.input("arg0", arg);
+        } else {
+            simple.input("arg0", toInputMap(prefix, arg.getClass().getSuperclass()));
+        }
+        callStack.get().add(simple);
+        workflowExecutor.addFunction(referenceName, function);
+        return null;
+    }
+
+
+
+    public static class IfThenElse {
+
+        private final Switch decide;
+
+        private IfThenElse(Switch decide) {
+            this.decide = decide;
+        }
+
+        public void elseif(Object...args) {
+            Task[] tasks = new Task[args.length];
+            for (int i = 0; i < args.length; i++) {
+                if(callStack.get() != null && !callStack.get().isEmpty()) {
+                    tasks[i] = callStack.get().pop();
+                } else {
+                    tasks[i] = null;
+                }
+
+            }
+            decide.defaultCase(tasks);
+        }
+    }
+
+
+
+    //Private methods
+    private static <T> T proxy(String name, Class<T> clazz) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(clazz);
+        if (Modifier.isFinal(clazz.getModifiers())) {
+            return null;
+        }
+        enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> {
+            if (method.getName().equals("hashCode") || !method.getName().startsWith("get")) {
+                return proxy.invokeSuper(obj, args);
+            }
+            throw new IllegalAccessError("Remote object can only be accessed inside context, methdo called: " + clazz.getName() + "#" + method.getName());
+        });
+        T u = (T) enhancer.create();
+        proxyMap.put(u, name);
+        return u;
     }
 }
