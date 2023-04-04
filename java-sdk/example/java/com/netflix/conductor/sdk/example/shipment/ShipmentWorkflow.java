@@ -20,11 +20,17 @@ import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.conductor.client.worker.Worker;
+import com.netflix.conductor.common.metadata.tasks.Task;
+import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.sdk.workflow.WorkflowMethod;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
+import org.mockito.internal.matchers.Or;
 
 import static com.netflix.conductor.sdk.example.shipment.Order.ShippingMethod.SAME_DAY;
+import static com.netflix.conductor.sdk.workflow.def.ConductorWorkflow.iff;
+import static com.netflix.conductor.sdk.workflow.def.ConductorWorkflow.transform;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -39,46 +45,18 @@ public class ShipmentWorkflow {
         User user = worker.getUserInfo(order.getUserId(), order.getQuantity());
         worker.sendEmail(calculated, user);
         User user2 = worker.getUserInfo(order.getUserId(), order.getQuantity());
-        worker.sendEmail(calculated, user2);
+        double charge = worker.sendEmail(calculated, user2);
         calculated = worker.calculateTaxAndTotal(order.getCountryCode(), order.getQuantity(), order.getUnitPrice());
         worker.sendEmail(calculated, user2);
-        ConductorWorkflow workflow = ConductorWorkflow.current();
+        Address address = transform((User u) -> u.getAddress(), Address.class, user);
+        Order2 order2 = transform((User u1, Order o1) -> new Order2(), Order2.class, user, order);
+        worker.sendMail(order2, address, charge);
 
+        iff("$.user.address.city == 'NYC'?true:false",
+                Map.of("user", user), worker.sendEmail(order, user)).elseif(worker.sendMail(new Order2(), new Address(), 1));
 
-        //Option 1 --> inject variables as a map
-//        workflow.transform(new Function<User, Address>() {
-//            @Override
-//            public Address apply(User o) {
-//                return o.getAddress();
-//            }
-//        }, user);
-
-//        Address address = workflow.transform(inputs -> {
-//            User s = (User) inputs[0];
-//            return s.getAddress();
-//        }, user);
-
-        Address address = (Address) workflow.transform(new Function<User, Address>() {
-            @Override
-            public Address apply(User o) {
-                return null;
-            }
-        }, null);
-
-
-
-        workflow.iff("$.user.address.city == 'NYC'?true:false",
-                Map.of("user", user), worker.sendEmail(order, user)).elseif(worker.sendMail(new Order2(), new Address()));
-
-        //Option 2 --> Allow inline code
-        //Issue: this converts to a function
-//        workflow.iff((userx) -> {
-//            return false;
-//        }, worker.sendEmail(order, user));
-        //workflow.iff("user.address.city == 'NYC", worker.sendEmail(order, user), worker.sendEmail(order, user));
-
-        workflow.iff("$.user.address.city == 'NYC'?true:false",
-                Map.of("user", user), workflow.iff("true", Map.of("user", user), worker.sendEmail(order, user)));
+        iff("$.user.address.city == 'NYC'?true:false",
+                Map.of("user", user), iff("true", Map.of("user", user), worker.sendEmail(order, user)));
 
 
 
@@ -89,7 +67,6 @@ public class ShipmentWorkflow {
         ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
         ShipmentWorkflow shipment = ConductorWorkflow.newInstance(ShipmentWorkflow.class);
         ShipmentWorkers2 worker = ConductorWorkflow.newInstance(ShipmentWorkers2.class);
-        ConductorWorkflow.current().startWorkers(ShipmentWorkers2.class.getPackageName());
         shipment.worker = worker;
 
         Order order = new Order();
@@ -101,6 +78,7 @@ public class ShipmentWorkflow {
         order.setUnitPrice(new BigDecimal("12.34"));
         order.setZipCode("10121");
         shipment.orderFlow(order);
+        ConductorWorkflow.current().startWorkers(ShipmentWorkers2.class.getPackageName());
         ConductorWorkflow workflow = ConductorWorkflow.current();
         workflow.executeDynamic(new HashMap<>());
         System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(workflow.toWorkflowDef()));

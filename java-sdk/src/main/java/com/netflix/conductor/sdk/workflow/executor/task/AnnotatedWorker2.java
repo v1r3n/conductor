@@ -12,10 +12,8 @@
  */
 package com.netflix.conductor.sdk.workflow.executor.task;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
@@ -26,16 +24,17 @@ import com.netflix.conductor.sdk.workflow.task.InputParam;
 import com.netflix.conductor.sdk.workflow.task.OutputParam;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.*;
 
-public class AnnotatedWorker implements Worker {
+public class AnnotatedWorker2 implements Worker {
 
     private String name;
 
-    private Method workerMethod;
+    private FunctionExecutor executor;
 
-    private Object obj;
+    private Class<?>[] parameterTypes;
 
     private ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
 
@@ -44,10 +43,10 @@ public class AnnotatedWorker implements Worker {
     private Set<TaskResult.Status> failedStatuses =
             Set.of(TaskResult.Status.FAILED, TaskResult.Status.FAILED_WITH_TERMINAL_ERROR);
 
-    public AnnotatedWorker(String name, Method workerMethod, Object obj) {
+    public AnnotatedWorker2(String name, FunctionExecutor executor, Class<?>[] parameterTypes) {
         this.name = name;
-        this.workerMethod = workerMethod;
-        this.obj = obj;
+        this.executor = executor;
+        this.parameterTypes = parameterTypes;
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -62,13 +61,13 @@ public class AnnotatedWorker implements Worker {
         try {
             TaskContext context = TaskContext.set(task);
             Object[] parameters = getInvocationParameters(task);
-            Object invocationResult = workerMethod.invoke(obj, parameters);
+            Object invocationResult = executor.execute(parameters);
             result = setValue(invocationResult, context.getTaskResult());
             if (!failedStatuses.contains(result.getStatus())
                     && result.getCallbackAfterSeconds() > 0) {
                 result.setStatus(TaskResult.Status.IN_PROGRESS);
             }
-        } catch (InvocationTargetException invocationTargetException) {
+        } catch (Exception invocationTargetException) {
             if (result == null) {
                 result = new TaskResult(task);
             }
@@ -85,23 +84,19 @@ public class AnnotatedWorker implements Worker {
             for (StackTraceElement stackTraceElement : e.getStackTrace()) {
                 String className = stackTraceElement.getClassName();
                 if (className.startsWith("jdk.")
-                        || className.startsWith(AnnotatedWorker.class.getName())) {
+                        || className.startsWith(AnnotatedWorker2.class.getName())) {
                     break;
                 }
                 stackTrace.append(stackTraceElement);
                 stackTrace.append("\n");
             }
             result.log(stackTrace.toString());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
         return result;
     }
 
     private Object[] getInvocationParameters(Task task) {
-        Class<?>[] parameterTypes = workerMethod.getParameterTypes();
-        Parameter[] parameters = workerMethod.getParameters();
 
         if (parameterTypes.length == 1 && parameterTypes[0].equals(Task.class)) {
             return new Object[] {task};
@@ -109,71 +104,21 @@ public class AnnotatedWorker implements Worker {
             return new Object[] {task.getInputData()};
         }
 
-        return getParameters(task, parameterTypes, parameters);
+        return getParameters(task);
     }
 
-    private Object[] getParameters(Task task, Class<?>[] parameterTypes, Parameter[] parameters) {
-        Annotation[][] parameterAnnotations = workerMethod.getParameterAnnotations();
+    private Object[] getParameters(Task task) {
         Object[] values = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            Annotation[] paramAnnotation = parameterAnnotations[i];
-            if (paramAnnotation != null && paramAnnotation.length > 0) {
-                Type type = parameters[i].getParameterizedType();
-                Class<?> parameterType = parameterTypes[i];
-                values[i] = getInputValue(task, parameterType, type, paramAnnotation);
-            } else {
-                Object value = task.getInputData().get("arg" + i);
-                if(value == null) {
-                    value = task.getInputData();
-                }
-                values[i] = om.convertValue(value, parameterTypes[i]);
+            Object value = task.getInputData().get("arg" + i);
+            if(value == null) {
+                value = task.getInputData();
             }
+            values[i] = om.convertValue(value, parameterTypes[i]);
         }
 
         return values;
     }
-
-    private Object getInputValue(
-            Task task, Class<?> parameterType, Type type, Annotation[] paramAnnotation) {
-        InputParam ip = findInputParamAnnotation(paramAnnotation);
-
-        if (ip == null) {
-            return om.convertValue(task.getInputData(), parameterType);
-        }
-
-        final String name = ip.value();
-        final Object value = task.getInputData().get(name);
-        if (value == null) {
-            return null;
-        }
-
-        if (List.class.isAssignableFrom(parameterType)) {
-            List<?> list = om.convertValue(value, List.class);
-            if (type instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) type;
-                Class<?> typeOfParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                List<Object> parameterizedList = new ArrayList<>();
-                for (Object item : list) {
-                    parameterizedList.add(om.convertValue(item, typeOfParameter));
-                }
-
-                return parameterizedList;
-            } else {
-                return list;
-            }
-        } else {
-            return om.convertValue(value, parameterType);
-        }
-    }
-
-    private static InputParam findInputParamAnnotation(Annotation[] paramAnnotation) {
-        return (InputParam)
-                Arrays.stream(paramAnnotation)
-                        .filter(ann -> ann.annotationType().equals(InputParam.class))
-                        .findFirst()
-                        .orElse(null);
-    }
-
     private TaskResult setValue(Object invocationResult, TaskResult result) {
 
         if (invocationResult == null) {
@@ -181,16 +126,8 @@ public class AnnotatedWorker implements Worker {
             return result;
         }
 
-        OutputParam opAnnotation =
-                workerMethod.getAnnotatedReturnType().getAnnotation(OutputParam.class);
-        if (opAnnotation != null) {
 
-            String name = opAnnotation.value();
-            result.getOutputData().put(name, invocationResult);
-            result.setStatus(TaskResult.Status.COMPLETED);
-            return result;
-
-        } else if (invocationResult instanceof TaskResult) {
+        if (invocationResult instanceof TaskResult) {
 
             return (TaskResult) invocationResult;
 
@@ -233,14 +170,11 @@ public class AnnotatedWorker implements Worker {
     }
 
     public void setPollingInterval(int pollingInterval) {
-        System.out.println(
-                "Setting the polling interval for " + getTaskDefName() + ", to " + pollingInterval);
         this.pollingInterval = pollingInterval;
     }
 
     @Override
     public int getPollingInterval() {
-        System.out.println("Sending the polling interval to " + pollingInterval);
         return pollingInterval;
     }
 }

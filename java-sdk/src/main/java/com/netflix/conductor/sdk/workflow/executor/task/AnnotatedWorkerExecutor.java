@@ -149,16 +149,6 @@ public class AnnotatedWorkerExecutor {
         }
     }
 
-    public <T,R> void addFunction(String name, Function<T, R> function) {
-        workerToThreadCount.put(name, 1);
-        workerToPollingInterval.put(name, 10);
-        workerClassObjs.put(name, this);
-        workerExecutors.put(name, Arrays.stream(AnnotatedWorkerExecutor.class.getDeclaredMethods()).filter(m -> m.getName().equals("executeFunction")).findFirst().get());
-    }
-
-    public <T,R> void executeFunction(Function<T, R> function, Object... args) {
-        function.apply((T) args[0]);
-    }
     private void addMethod(WorkerTask annotation, Method method, Object bean) {
         String name = annotation.value();
 
@@ -182,6 +172,10 @@ public class AnnotatedWorkerExecutor {
                 method,
                 threadCount,
                 pollingInterval);
+    }
+
+    public void addWorker(AnnotatedWorker2 worker) {
+        executors.add(worker);
     }
 
     public void startPolling() {

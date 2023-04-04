@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
+import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorker;
+import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorker2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,7 +241,7 @@ public class WorkflowExecutor {
         return taskClient;
     }
 
-    public <T, R> void addFunction(String referenceName, Function<T, R> function) {
-        annotatedWorkerExecutor.addFunction(referenceName, function);
+    public void addWorker(AnnotatedWorker2 worker) {
+        annotatedWorkerExecutor.addWorker(worker);
     }
 }

@@ -15,24 +15,27 @@ package com.netflix.conductor.sdk.workflow.def;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import com.netflix.conductor.client.exception.ConductorClientException;
+import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.sdk.example.shipment.User;
 import com.netflix.conductor.sdk.workflow.WorkflowMethod;
 import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.Switch;
 import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.def.tasks.TaskRegistry;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
+import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorker;
+import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorker2;
+import com.netflix.conductor.sdk.workflow.executor.task.FunctionExecutor;
 import com.netflix.conductor.sdk.workflow.task.InputParam;
 import com.netflix.conductor.sdk.workflow.task.WorkerTask;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
@@ -461,7 +464,7 @@ public class ConductorWorkflow<T> {
         return (T) enhancer.create();
     }
 
-    public IfThenElse iff(String condition, Map<String, Object> inputs, Object...args) {
+    public static IfThenElse iff(String condition, Map<String, Object> inputs, Object...args) {
         AtomicInteger refCount = referenceNameCounter.getOrDefault("switch", new AtomicInteger(0));
         referenceNameCounter.put("switch", refCount);
         String referenceName = "switch_" + refCount.incrementAndGet();
@@ -493,8 +496,8 @@ public class ConductorWorkflow<T> {
         return new IfThenElse(decide);
     }
 
-    public <T, R>R transform(Function<T, R> function, T arg) {
-        //return function.apply(arg);
+
+    public static <T, R>R transform(Function<T, R> function, Class<R> returnType, T arg) {
         AtomicInteger refCount = referenceNameCounter.getOrDefault("transform", new AtomicInteger(0));
         referenceNameCounter.put("transform", refCount);
         String referenceName = "transform_" + refCount.incrementAndGet();
@@ -506,8 +509,38 @@ public class ConductorWorkflow<T> {
             simple.input("arg0", toInputMap(prefix, arg.getClass().getSuperclass()));
         }
         callStack.get().add(simple);
-        workflowExecutor.addFunction(referenceName, function);
-        return null;
+        FunctionExecutor executor = new FunctionExecutor(objects -> function.apply((T) objects[0]));
+        Class<?> clazz = proxyMap.containsKey(arg) ? arg.getClass().getSuperclass() : arg.getClass();
+        AnnotatedWorker2 worker = new AnnotatedWorker2(referenceName, executor, new Class[]{clazz});
+        ConductorWorkflow.current().workflowExecutor.addWorker(worker);
+        return proxy(referenceName, returnType);
+    }
+
+    public static <T1, T2, R>R transform(Transformers.Transformer2<T1, T2, R> function, Class<R> returnType, T1 arg1, T2 arg2) {
+        FunctionExecutor executor = new FunctionExecutor(objects -> function.apply((T1) objects[0], (T2)objects[1]));
+
+        AtomicInteger refCount = referenceNameCounter.getOrDefault("transform", new AtomicInteger(0));
+        referenceNameCounter.put("transform", refCount);
+        String referenceName = "transform_" + refCount.incrementAndGet();
+        Task simple = new SimpleTask(referenceName, referenceName);
+        Object[] args = new Object[]{arg1, arg2};
+        Class<?>[] parameterTypes = new Class[args.length];
+
+        for (int i = 0; i < args.length; i++) {
+            String prefix = proxyMap.get(args[i]);
+            if(prefix == null) {
+                simple.input("arg" + i, args[i]);
+                parameterTypes[i] = args[i].getClass();
+            } else {
+                simple.input("arg" + i, toInputMap(prefix, args[i].getClass().getSuperclass()));
+                parameterTypes[i] = args[i].getClass().getSuperclass();
+            }
+        }
+        callStack.get().add(simple);
+
+        AnnotatedWorker2 worker = new AnnotatedWorker2(referenceName, executor, parameterTypes);
+        ConductorWorkflow.current().workflowExecutor.addWorker(worker);
+        return proxy(referenceName, returnType);
     }
 
 

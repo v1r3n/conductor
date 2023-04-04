@@ -17,9 +17,9 @@ import com.netflix.conductor.sdk.workflow.task.WorkerTask;
 
 import java.math.BigDecimal;
 
-public class ShipmentWorkers2 {
+public class ShipmentWorkers2 implements ShipmentWorkerInterface {
 
-    @WorkerTask("calculate_tax_and_total")
+    //@WorkerTask("calculate_tax_and_total")
     public Order calculateTaxAndTotal(@InputParam("countryCode") String countryCode,
                                       @InputParam("quantity") int quantity, @InputParam("unitPrice") BigDecimal unitPrice) {
         Order order = new Order();
@@ -37,11 +37,11 @@ public class ShipmentWorkers2 {
 
     @WorkerTask("send_email")
     public double sendEmail(@InputParam("order") Order order, @InputParam("user") User user) {
-        return 2.0d;
+        return 2.34d;
     }
 
     @WorkerTask("send_mail")
-    public double sendMail(@InputParam("order") Order2 order, Address user) {
+    public double sendMail(@InputParam("order") Order2 order, Address user, double charge) {
         return 10.0d;
     }
 
