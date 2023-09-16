@@ -22,10 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +156,7 @@ public class WorkflowCreationTests {
                         .equals(TaskType.TASK_TYPE_JOIN));
     }
 
-    //@Test
+    // @Test
     public void verifyInlineWorkflowExecution() throws ValidationError {
         TestWorkflowInput workflowInput = new TestWorkflowInput("username", "10121", "US");
         try {
