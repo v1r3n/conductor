@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew build --scan
+          ./gradlew build --scan > conductor_tests.log
       - name: Print Server Logs
         if: always()
         run: |
