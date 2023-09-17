@@ -64,6 +64,33 @@ allprojects {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     }
 
+    //test
+    ext.failedTests = []
+
+    // add a testlistener to all tasks of type Test
+    tasks.withType(Test) {
+        afterTest { TestDescriptor descriptor, TestResult result ->
+            if(result.resultType == org.gradle.api.tasks.testing.TestResult.ResultType.FAILURE){
+                failedTests << ["${descriptor.className}::${descriptor.name}"]
+            }
+        }
+    }
+
+    // print out tracked failed tests when the build has finished
+    gradle.buildFinished {
+        if(!failedTests.empty){
+            println "Failed tests for ${project.name}:"
+            failedTests.each { failedTest ->
+                println failedTest
+            }
+            println ""
+        } else {
+            println "ALL TEST PASSED!"
+        }
+    }
+
+    //test
+
     repositories {
         mavenCentral()
 
