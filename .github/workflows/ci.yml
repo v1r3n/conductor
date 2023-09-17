@@ -38,7 +38,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           java -version
-          ./gradlew build --info > conductor_tests.log
+          ./gradlew build > conductor_tests.log
       - name: Print Server Logs
         if: always()
         run: |
