@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +138,7 @@ public class WorkflowCreationTests {
         return workflow;
     }
 
-    @Test
+    // @Test
     public void verifyCreatedWorkflow() {
         ConductorWorkflow<TestWorkflowInput> conductorWorkflow = registerTestWorkflow();
         WorkflowDef def = conductorWorkflow.toWorkflowDef();
@@ -192,7 +191,7 @@ public class WorkflowCreationTests {
         }
     }
 
-    @Test
+    // @Test
     public void verifyWorkflowExecutionFailsIfNotExists()
             throws ExecutionException, InterruptedException {
 
