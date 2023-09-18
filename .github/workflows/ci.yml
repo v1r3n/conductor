@@ -43,6 +43,7 @@ jobs:
         if: always()
         run: |
           cat conductor_tests.log
+          cat test-harness/build/reports/tests/test/index.html
       - name: Publish server logs
         if: always()
         uses: actions/upload-artifact@v3
