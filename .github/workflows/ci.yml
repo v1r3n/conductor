@@ -1,6 +1,6 @@
 name: CI
 
-on: [ push, pull_request ]
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   build:
@@ -38,16 +38,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./gradlew build --scan
-      - name: Print Server Logs
-        if: always()
-        run: |
-          cat conductor_tests.log
-      - name: Publish server logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: server-logs
-          path: conductor_tests.log
       - name: Build and Publish snapshot
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
@@ -90,15 +80,15 @@ jobs:
 
       - name: Run E2E Tests
         uses: cypress-io/github-action@v4
-        with: 
+        with:
           working-directory: ui
           install: false
           start: yarn run serve-build
           wait-on: 'http://localhost:5000'
-      
+
       - name: Run Component Tests
         uses: cypress-io/github-action@v4
-        with: 
+        with:
           working-directory: ui
           install: false
           component: true
@@ -109,11 +99,10 @@ jobs:
         with:
           name: cypress-screenshots
           path: ui/cypress/screenshots
-      
+
       - name: Archive test videos
         uses: actions/upload-artifact@v2
         if: always()
         with:
           name: cypress-videos
           path: ui/cypress/videos
-
