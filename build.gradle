@@ -149,8 +149,8 @@ allprojects {
         }
         testImplementation('org.springframework.boot:spring-boot-starter-log4j2')
         //testImplementation 'junit:junit'
-        testImplementation 'org.junit.vintage:junit-vintage-engine:5.7.0'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+        testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
     }
 
     // processes additional configuration metadata json file as described here
