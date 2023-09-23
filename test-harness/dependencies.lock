@@ -131,8 +131,11 @@
         "org.glassfish.jersey.core:jersey-common": {
             "locked": "2.22.2"
         },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.7.0"
+            "locked": "5.8.2"
         },
         "org.spockframework:spock-core": {
             "locked": "2.1-groovy-3.0"
@@ -681,10 +684,10 @@
             "locked": "2.22.2"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.7.0"
+            "locked": "5.9.1"
         },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.7.0"
+            "locked": "5.8.2"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "firstLevelTransitive": [
