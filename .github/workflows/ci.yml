@@ -37,7 +37,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd test-harness
-          ../gradlew build -Ptest-harness --scan --no-daemon
+          ../gradlew dependencies -Ptest-harness
+          ../gradlew test -Ptest-harness --scan --no-daemon
       - name: Publish server logs
         if: always()
         uses: actions/upload-artifact@v3
