@@ -54,7 +54,7 @@
             "locked": "30.0-jre"
         },
         "com.google.protobuf:protobuf-java": {
-            "locked": "3.21.7"
+            "locked": "3.23.2"
         },
         "com.netflix.conductor:conductor-cassandra-persistence": {
             "project": true
@@ -131,11 +131,8 @@
         "org.glassfish.jersey.core:jersey-common": {
             "locked": "2.22.2"
         },
-        "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.6.2"
-        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.9.0"
+            "locked": "5.8.2"
         },
         "org.spockframework:spock-core": {
             "locked": "2.1-groovy-3.0"
@@ -147,6 +144,9 @@
             "locked": "2.7.3"
         },
         "org.springframework.boot:spring-boot-starter-test": {
+            "locked": "2.7.3"
+        },
+        "org.springframework.boot:spring-boot-starter-web": {
             "locked": "2.7.3"
         },
         "org.springframework.retry:spring-retry": {
@@ -247,7 +247,7 @@
                 "com.netflix.conductor:conductor-grpc",
                 "com.netflix.conductor:conductor-grpc-client"
             ],
-            "locked": "3.21.7"
+            "locked": "3.23.2"
         },
         "com.jayway.jsonpath:json-path": {
             "firstLevelTransitive": [
@@ -680,11 +680,8 @@
             ],
             "locked": "2.22.2"
         },
-        "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.6.2"
-        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.9.0"
+            "locked": "5.8.2"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "firstLevelTransitive": [
