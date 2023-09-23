@@ -37,7 +37,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd test-harness
-          ../gradlew build -Ptest-harness --scan
+          ../gradlew build -Ptest-harness --scan --no-daemon
       - name: Print Server Logs
         if: always()
         run: |
