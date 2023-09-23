@@ -47,4 +47,9 @@ dependencies {
     testImplementation "javax.ws.rs:javax.ws.rs-api:${revJAXRS}"
     testImplementation "org.glassfish.jersey.core:jersey-common:${revJerseyCommon}"
 }
+test {
+    useJUnitPlatform()
+    jvmArgs '-Xmx1g'
+}
+
 tasks.forEach(task -> task.onlyIf { project.hasProperty('test-harness') })
