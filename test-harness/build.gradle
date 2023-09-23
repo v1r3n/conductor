@@ -45,3 +45,4 @@ dependencies {
     testImplementation "javax.ws.rs:javax.ws.rs-api:${revJAXRS}"
     testImplementation "org.glassfish.jersey.core:jersey-common:${revJerseyCommon}"
 }
+tasks.forEach(task -> task.onlyIf { project.hasProperty('test-harness') })
