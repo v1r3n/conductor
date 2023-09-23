@@ -207,9 +207,6 @@
         "javax.ws.rs:jsr311-api": {
             "locked": "1.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.logging.log4j:log4j-api": {
             "locked": "2.17.2"
         },
@@ -232,7 +229,7 @@
             "locked": "1.70"
         },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.mock-server:mockserver-client-java": {
             "locked": "5.12.0"
@@ -350,9 +347,6 @@
         "javax.ws.rs:jsr311-api": {
             "locked": "1.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.bval:bval-jsr": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-common",
@@ -413,8 +407,11 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.70"
         },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.mock-server:mockserver-client-java": {
             "locked": "5.12.0"

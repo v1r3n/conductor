@@ -230,9 +230,6 @@
         "jakarta.xml.bind:jakarta.xml.bind-api": {
             "locked": "2.3.3"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.bval:bval-jsr": {
             "locked": "2.0.5"
         },
@@ -261,7 +258,7 @@
             "locked": "2.3.3"
         },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "locked": "15.4"
@@ -346,9 +343,6 @@
         "jakarta.xml.bind:jakarta.xml.bind-api": {
             "locked": "2.3.3"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.bval:bval-jsr": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-common"
@@ -402,8 +396,11 @@
         "org.glassfish.jaxb:jaxb-runtime": {
             "locked": "2.3.3"
         },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "locked": "15.4"

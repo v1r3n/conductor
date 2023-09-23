@@ -200,9 +200,6 @@
         "javax.ws.rs:javax.ws.rs-api": {
             "locked": "2.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.12.0"
         },
@@ -228,7 +225,7 @@
             "locked": "2.22.2"
         },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.powermock:powermock-api-mockito2": {
             "locked": "2.0.9"
@@ -310,9 +307,6 @@
         "javax.ws.rs:javax.ws.rs-api": {
             "locked": "2.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.bval:bval-jsr": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-common"
@@ -366,8 +360,11 @@
         "org.glassfish.jersey.core:jersey-common": {
             "locked": "2.22.2"
         },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.powermock:powermock-api-mockito2": {
             "locked": "2.0.9"

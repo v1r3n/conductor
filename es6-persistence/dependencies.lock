@@ -234,9 +234,6 @@
         "commons-io:commons-io": {
             "locked": "2.7"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.12.0"
         },
@@ -268,7 +265,7 @@
             "locked": "6.8.12"
         },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.springframework.boot:spring-boot-starter-log4j2": {
             "locked": "2.7.3"
@@ -383,9 +380,6 @@
             ],
             "locked": "2.3.3"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.bval:bval-jsr": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-common",
@@ -452,8 +446,11 @@
         "org.elasticsearch.client:transport": {
             "locked": "6.8.12"
         },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "firstLevelTransitive": [

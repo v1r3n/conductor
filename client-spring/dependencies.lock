@@ -240,9 +240,6 @@
         "com.netflix.eureka:eureka-client": {
             "locked": "1.10.10"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.logging.log4j:log4j-api": {
             "locked": "2.17.2"
         },
@@ -259,7 +256,7 @@
             "locked": "2.17.2"
         },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.springframework.boot:spring-boot-starter": {
             "locked": "2.7.3"
@@ -381,9 +378,6 @@
             ],
             "locked": "2.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.bval:bval-jsr": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-common"
@@ -449,8 +443,11 @@
             ],
             "locked": "2.35"
         },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.10.0"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "firstLevelTransitive": [
