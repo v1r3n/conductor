@@ -38,16 +38,6 @@ jobs:
         run: |
           cd test-harness
           ../gradlew build -Ptest-harness --scan --no-daemon
-      - name: Print Server Logs
-        if: always()
-        run: |
-          cat conductor_tests.log
-      - name: Publish server logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: server-logs
-          path: conductor_tests.log
       - name: Build and Publish snapshot
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
