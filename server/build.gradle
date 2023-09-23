@@ -62,6 +62,3 @@ bootJar {
     classifier = 'boot'
 }
 
-springBoot {
-    buildInfo()
-}
