@@ -143,7 +143,10 @@ allprojects {
         }
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-        testImplementation('org.springframework.boot:spring-boot-starter-test')
+        testImplementation('org.springframework.boot:spring-boot-starter-test') {
+            exclude group: 'junit'
+            exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        }
         testImplementation('org.springframework.boot:spring-boot-starter-log4j2')
         testImplementation 'junit:junit'
         testImplementation "org.junit.vintage:junit-vintage-engine"

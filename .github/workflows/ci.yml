@@ -37,7 +37,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew build --scan
           cd test-harness
           ../gradlew build -Ptest-harness --scan
       - name: Build and Publish snapshot
