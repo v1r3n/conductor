@@ -38,6 +38,8 @@ dependencies {
     testImplementation "org.testcontainers:elasticsearch:${revTestContainer}"
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.junit.vintage:junit-vintage-engine"
+    testImplementation('org.junit.jupiter:junit-jupiter:5.6.2')
+
     testImplementation "javax.ws.rs:javax.ws.rs-api:${revJAXRS}"
     testImplementation "org.glassfish.jersey.core:jersey-common:${revJerseyCommon}"
 }
