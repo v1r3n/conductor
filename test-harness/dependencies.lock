@@ -38,6 +38,11 @@
             "locked": "2.17.2"
         }
     },
+    "spotless865457264": {
+        "com.google.googlejavaformat:google-java-format": {
+            "locked": "1.17.0"
+        }
+    },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
             "locked": "2.13.3"
@@ -115,7 +120,7 @@
             "locked": "2.17.2"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.5.22"
+            "locked": "3.0.9"
         },
         "org.elasticsearch.client:elasticsearch-rest-client": {
             "locked": "6.8.12"
@@ -126,14 +131,17 @@
         "org.glassfish.jersey.core:jersey-common": {
             "locked": "2.22.2"
         },
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.6.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.9.0"
         },
         "org.spockframework:spock-core": {
-            "locked": "1.3-groovy-2.5"
+            "locked": "2.1-groovy-3.0"
         },
         "org.spockframework:spock-spring": {
-            "locked": "1.3-groovy-2.5"
+            "locked": "2.1-groovy-3.0"
         },
         "org.springframework.boot:spring-boot-starter-log4j2": {
             "locked": "2.7.3"
@@ -427,27 +435,27 @@
                 "com.netflix.conductor:conductor-grpc-client",
                 "com.netflix.conductor:conductor-grpc-server"
             ],
-            "locked": "1.57.1"
+            "locked": "1.58.0"
         },
         "io.grpc:grpc-protobuf": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-grpc",
                 "com.netflix.conductor:conductor-grpc-client"
             ],
-            "locked": "1.57.1"
+            "locked": "1.58.0"
         },
         "io.grpc:grpc-services": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-grpc-server"
             ],
-            "locked": "1.57.1"
+            "locked": "1.58.0"
         },
         "io.grpc:grpc-stub": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-grpc",
                 "com.netflix.conductor:conductor-grpc-client"
             ],
-            "locked": "1.57.1"
+            "locked": "1.58.0"
         },
         "io.orkes.queues:orkes-conductor-queues": {
             "firstLevelTransitive": [
@@ -640,7 +648,7 @@
             "locked": "2.17.2"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.5.22"
+            "locked": "3.0.9"
         },
         "org.elasticsearch.client:elasticsearch-rest-client": {
             "firstLevelTransitive": [
@@ -672,8 +680,11 @@
             ],
             "locked": "2.22.2"
         },
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.6.2"
+        },
         "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.8.2"
+            "locked": "5.9.0"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "firstLevelTransitive": [
@@ -701,10 +712,10 @@
             "locked": "1.7.36"
         },
         "org.spockframework:spock-core": {
-            "locked": "1.3-groovy-2.5"
+            "locked": "2.1-groovy-3.0"
         },
         "org.spockframework:spock-spring": {
-            "locked": "1.3-groovy-2.5"
+            "locked": "2.1-groovy-3.0"
         },
         "org.springdoc:springdoc-openapi-ui": {
             "firstLevelTransitive": [
