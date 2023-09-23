@@ -232,7 +232,7 @@
             "locked": "2.17.2"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.9"
+            "locked": "3.0.18"
         },
         "org.junit.vintage:junit-vintage-engine": {
             "locked": "5.8.2"
@@ -417,7 +417,7 @@
             "locked": "2.17.2"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.9"
+            "locked": "3.0.18"
         },
         "org.junit.vintage:junit-vintage-engine": {
             "locked": "5.8.2"

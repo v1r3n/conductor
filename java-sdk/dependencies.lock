@@ -258,7 +258,7 @@
             "locked": "2.17.2"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.9"
+            "locked": "3.0.18"
         },
         "org.glassfish.jersey.core:jersey-common": {
             "locked": "2.22.2"
@@ -436,7 +436,7 @@
             "locked": "2.17.2"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.9"
+            "locked": "3.0.18"
         },
         "org.glassfish.jersey.core:jersey-common": {
             "firstLevelTransitive": [
