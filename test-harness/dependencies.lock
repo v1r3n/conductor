@@ -98,9 +98,6 @@
         "javax.ws.rs:javax.ws.rs-api": {
             "locked": "2.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.12.0"
         },
@@ -131,8 +128,8 @@
         "org.glassfish.jersey.core:jersey-common": {
             "locked": "2.22.2"
         },
-        "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.9.1"
+        "org.junit.vintage:junit-vintage-engine": {
+            "locked": "5.7.0"
         },
         "org.spockframework:spock-core": {
             "locked": "2.1-groovy-3.0"
@@ -500,9 +497,6 @@
             ],
             "locked": "1.1.1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "net.thisptr:jackson-jq": {
             "firstLevelTransitive": [
                 "com.netflix.conductor:conductor-json-jq-task"
@@ -681,7 +675,10 @@
             "locked": "2.22.2"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.9.1"
+            "locked": "5.7.0"
+        },
+        "org.junit.vintage:junit-vintage-engine": {
+            "locked": "5.7.0"
         },
         "org.openjdk.nashorn:nashorn-core": {
             "firstLevelTransitive": [

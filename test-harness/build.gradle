@@ -40,9 +40,6 @@ dependencies {
 
     testImplementation "org.testcontainers:elasticsearch:${revTestContainer}"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
-
-
     testImplementation "javax.ws.rs:javax.ws.rs-api:${revJAXRS}"
     testImplementation "org.glassfish.jersey.core:jersey-common:${revJerseyCommon}"
 }

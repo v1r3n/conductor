@@ -148,8 +148,9 @@ allprojects {
             exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
         }
         testImplementation('org.springframework.boot:spring-boot-starter-log4j2')
-        testImplementation 'junit:junit'
-        //testImplementation "org.junit.vintage:junit-vintage-engine"
+        //testImplementation 'junit:junit'
+        testImplementation 'org.junit.vintage:junit-vintage-engine:5.7.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     }
 
     // processes additional configuration metadata json file as described here
