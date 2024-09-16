@@ -259,7 +259,7 @@ allprojects {
         testImplementation "org.junit.vintage:junit-vintage-engine"
 
         // Needed for build to work on m1/m2 macs
-        testImplementation 'net.java.dev.jna:jna:5.13.0'
+        testImplementation 'net.java.dev.jna:jna:5.15.0'
     }
 
     // processes additional configuration metadata json file as described here
